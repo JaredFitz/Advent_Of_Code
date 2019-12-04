@@ -47,10 +47,19 @@ def process_intcode(intcode):
         intcode[result_pos] = result
     return 'Never found the end code'
 
+def find_noun_and_verb(output, intcode, min_noun, max_noun, min_verb, max_verb):
+    # Note: the noun and verb are both between 0 and 99
+    for noun in range(min_noun, max_noun):
+        for verb in range(min_verb, max_verb):
+            if process_intcode([day_2_input[0], noun, verb] + day_2_input[3:]) == output:
+                return 100 * noun + verb
+    return 'No possible noun/verb combination was found'
+
 ############### RESULTS ###############
 def print_results():
     print(f'Day 1.1: {simple_fuel_requirements(day_1_input)}')
     print(f'Day 1.2: {complex_fuel_requirements(day_1_input)}')
     print(f'Day 2.1: {process_intcode([day_2_input[0], 12, 2] + day_2_input[3:])}')
+    print(f'Day 2.2: {find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99)}')
 
 print_results()
