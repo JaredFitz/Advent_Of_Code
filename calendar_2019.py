@@ -213,7 +213,7 @@ def determine_manhattan_distance(point):
 # The value is within the range given in your puzzle input.
 # Two adjacent digits are the same (like 22 in 122345).
 # Going from left to right, the digits never decrease; they only ever increase or stay the same (like 111123 or 135679).
-def find_possible_fuel_passwords(password_range):
+def find_possible_fuel_passwords(password_range, difficulty):
     range_min = min(password_range)
     range_max = max(password_range)
     possible_passwords = []
@@ -221,16 +221,36 @@ def find_possible_fuel_passwords(password_range):
     for i in range(range_min, range_max, 1):
         # in case the number is 5-digit or less
         password = str(i).zfill(6)
-        if has_adjacent_numbers(password) and never_decreases(password):
-            possible_passwords.append(password)
+        if difficulty == 'SIMPLE':
+            if has_at_least_double_number(password) and never_decreases(password):
+                possible_passwords.append(password)
+        elif difficulty == 'COMPLEX':
+            if has_double_number(password) and never_decreases(password):
+                possible_passwords.append(password)
 
     return possible_passwords
 
-def has_adjacent_numbers(password):
+def has_at_least_double_number(password):
     for l in range(1, len(password)):
         if password[l] == password[l - 1]:
             return True
     return False
+
+def has_double_number(password):
+    current_count = 0
+    current_char = ''
+    summary = []
+    for l in range(0, len(password)):
+        if password[l] == current_char:
+            current_count = current_count + 1
+        else:
+            summary.append(current_count)
+            current_char = password[l]
+            current_count = 1
+
+    summary.append(current_count)
+    
+    return 2 in summary
 
 def never_decreases(password):
     for l in range(1, len(password)):
@@ -246,6 +266,7 @@ def print_results():
     print(f'Day 2.2: {find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99)}')
     print(f'Day 3.1: {find_closest_intersection(day_3_input)}')
     print(f'Day 3.2: {find_earliest_signal_overlap(day_3_input)}')
-    print(f'Day 4.1: {len(find_possible_fuel_passwords(day_4_input))}')
+    print(f'Day 4.1: {len(find_possible_fuel_passwords(day_4_input, "SIMPLE"))}')
+    print(f'Day 4.2: {len(find_possible_fuel_passwords(day_4_input, "COMPLEX"))}')
 
 print_results()
