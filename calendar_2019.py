@@ -1,5 +1,5 @@
 import math
-from data_2019 import day_1_input, day_2_input, day_3_input
+from data_2019 import day_1_input, day_2_input, day_3_input, day_4_input
 
 ############### DAY 1 ###############
 def calculate_simple_fuel(module):
@@ -208,6 +208,36 @@ def get_perp_intersection_point(horizontal_segment, vertical_segment):
 def determine_manhattan_distance(point):
     return abs(point[0]) + abs(point[1])
 
+############### DAY 4 ###############
+# It is a six-digit number.
+# The value is within the range given in your puzzle input.
+# Two adjacent digits are the same (like 22 in 122345).
+# Going from left to right, the digits never decrease; they only ever increase or stay the same (like 111123 or 135679).
+def find_possible_fuel_passwords(password_range):
+    range_min = min(password_range)
+    range_max = max(password_range)
+    possible_passwords = []
+
+    for i in range(range_min, range_max, 1):
+        # in case the number is 5-digit or less
+        password = str(i).zfill(6)
+        if has_adjacent_numbers(password) and never_decreases(password):
+            possible_passwords.append(password)
+
+    return possible_passwords
+
+def has_adjacent_numbers(password):
+    for l in range(1, len(password)):
+        if password[l] == password[l - 1]:
+            return True
+    return False
+
+def never_decreases(password):
+    for l in range(1, len(password)):
+        if int(password[l]) < int(password[l - 1]):
+            return False
+    return True
+
 ############### RESULTS ###############
 def print_results():
     print(f'Day 1.1: {simple_fuel_requirements(day_1_input)}')
@@ -216,5 +246,6 @@ def print_results():
     print(f'Day 2.2: {find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99)}')
     print(f'Day 3.1: {find_closest_intersection(day_3_input)}')
     print(f'Day 3.2: {find_earliest_signal_overlap(day_3_input)}')
+    print(f'Day 4.1: {len(find_possible_fuel_passwords(day_4_input))}')
 
 print_results()
