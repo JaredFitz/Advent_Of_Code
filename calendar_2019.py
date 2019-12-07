@@ -1,5 +1,5 @@
 import math
-from data_2019 import day_1_input, day_2_input, day_3_input, day_4_input
+from data_2019 import day_1_input, day_2_input, day_3_input, day_4_input, day_5_input
 
 ############### DAY 1 ###############
 def calculate_simple_fuel(module):
@@ -29,29 +29,46 @@ def complex_fuel_requirements(fuel_modules):
 
 ############### DAY 2 ###############
 def process_intcode(intcode):
-    for i in range(0, len(intcode), 4):
-        operator = intcode[i]
-        if operator == 99:
-            return intcode[0]
-
-        first_pos = intcode[i + 1]
-        second_pos = intcode[i + 2]
-        result_pos = intcode[i + 3]
-        result = 0
-        if operator == 1:
-            result = intcode[first_pos] + intcode[second_pos]
-        elif operator == 2:
-            result = intcode[first_pos] * intcode[second_pos]
+    input_integer = 1
+    outputs = []
+    opcode = 0
+    i = 0
+    while opcode != 99:
+        expanded_opcode = str(intcode[i]).zfill(5)
+        opcode = int(expanded_opcode[3:])
+        first_param_mode = int(expanded_opcode[2:3])
+        second_param_mode = int(expanded_opcode[1:2])
+        if opcode == 99:
+            return {'intcode': intcode, 'outputs': outputs}
+        
+        if opcode == 1:
+            first_num = intcode[intcode[i + 1]] if first_param_mode == 0 else intcode[i + 1]
+            second_num = intcode[intcode[i + 2]] if second_param_mode == 0 else intcode[i + 2]
+            result_pos = intcode[i + 3]
+            intcode[result_pos] = first_num + second_num
+            i += 4
+        elif opcode == 2:
+            first_num = intcode[intcode[i + 1]] if first_param_mode == 0 else intcode[i + 1]
+            second_num = intcode[intcode[i + 2]] if second_param_mode == 0 else intcode[i + 2]
+            result_pos = intcode[i + 3]
+            intcode[result_pos] = first_num * second_num
+            i += 4
+        elif opcode == 3:
+            intcode[intcode[i + 1]] = input_integer
+            i += 2
+        elif opcode == 4:
+            print(i)
+            outputs.append(intcode[intcode[i + 1]])
+            i += 2
         else:
             return f'Something went wrong at index {i}'
-        intcode[result_pos] = result
     return 'Never found the end code'
 
 def find_noun_and_verb(output, intcode, min_noun, max_noun, min_verb, max_verb):
     # Note: the noun and verb are both between 0 and 99
     for noun in range(min_noun, max_noun):
         for verb in range(min_verb, max_verb):
-            if process_intcode([day_2_input[0], noun, verb] + day_2_input[3:]) == output:
+            if process_intcode([intcode[0], noun, verb] + intcode[3:])['intcode'][0] == output:
                 return 100 * noun + verb
     return 'No possible noun/verb combination was found'
 
@@ -262,11 +279,13 @@ def never_decreases(password):
 def print_results():
     print(f'Day 1.1: {simple_fuel_requirements(day_1_input)}')
     print(f'Day 1.2: {complex_fuel_requirements(day_1_input)}')
-    print(f'Day 2.1: {process_intcode([day_2_input[0], 12, 2] + day_2_input[3:])}')
+    print(f'Day 2.1: {process_intcode([day_2_input[0], 12, 2] + day_2_input[3:])["intcode"][0]}')
     print(f'Day 2.2: {find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99)}')
     print(f'Day 3.1: {find_closest_intersection(day_3_input)}')
     print(f'Day 3.2: {find_earliest_signal_overlap(day_3_input)}')
     print(f'Day 4.1: {len(find_possible_fuel_passwords(day_4_input, "SIMPLE"))}')
     print(f'Day 4.2: {len(find_possible_fuel_passwords(day_4_input, "COMPLEX"))}')
+    print(f'Day 5.1: {process_intcode(day_5_input)["outputs"]}')
+
 
 print_results()
