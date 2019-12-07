@@ -57,8 +57,8 @@ def process_intcode(intcode):
             intcode[intcode[i + 1]] = input_integer
             i += 2
         elif opcode == 4:
-            print(i)
-            outputs.append(intcode[intcode[i + 1]])
+            first_num = intcode[intcode[i + 1]] if first_param_mode == 0 else intcode[i + 1]
+            outputs.append(first_num)
             i += 2
         else:
             return f'Something went wrong at index {i}'
