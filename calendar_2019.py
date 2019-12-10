@@ -309,24 +309,38 @@ def never_decreases(password):
 
 ############### DAY 6 ###############
 def calculate_total_orbits(orbits):
-    split_orbits = []
-    planets = {}
-    for orbit in orbits:
-        so = orbit.split(')')
-        planets[so[0]] = 0
-        planets[so[1]] = 0
-        split_orbits.append(orbit.split(')'))
-
+    split_orbits = get_split_orbits(orbits)
+    planets = get_all_planets(split_orbits)
+    
     total_orbits = 0
     for planet in planets:
         # Subtract one because it is the number of paths to the center
         # (one less than the number of planets)
-        total_orbits += len(get_paths_to_com(split_orbits, planet)) - 1
+        total_orbits += len(get_path_to_com(split_orbits, planet)) - 1
     
     return total_orbits
 
+def get_split_orbits(orbits):
+    split_orbits = []
+    for orbit in orbits:
+        split_orbits.append(orbit.split(')'))
+    
+    return split_orbits
+
+def get_all_planets(split_orbits):
+    planets = {}
+    for orbit in split_orbits:
+        planets[orbit[0]] = 0
+        planets[orbit[1]] = 0
+    
+    result = []
+    for p in planets:
+        result.append(p)
+
+    return result
+    
 # Returns an array pathing to the center of mass: ['C', 'B', 'A', 'COM']
-def get_paths_to_com(split_orbits, planet):
+def get_path_to_com(split_orbits, planet):
     current_planet = planet
     orbit_count = [current_planet]
     while current_planet != 'COM':
@@ -335,6 +349,26 @@ def get_paths_to_com(split_orbits, planet):
                 current_planet = o[0]
                 orbit_count.append(current_planet)
     return orbit_count
+
+def calculate_orbital_transfers(orbits, start, end):
+    split_orbits = get_split_orbits(orbits)
+
+    path1 = get_path_to_com(split_orbits, start)
+    path2 = get_path_to_com(split_orbits, end)
+
+    path2_set = set()
+    for p in path2:
+        path2_set.add(p)
+    
+    intersections = []
+    for i in range(0, len(path1)):
+        current = path1[i]
+        if current in path2_set:
+            # subract 2 because the first transfer happens from index 1 to 2 in each path
+            intersections.append(i + path2.index(current) - 2)
+
+    return min(intersections)            
+
 
 ############### RESULTS ###############
 def print_results():
@@ -349,5 +383,6 @@ def print_results():
     print(f'Day 5.1: {process_intcode(day_5_input, 1)["outputs"][-1]}')
     print(f'Day 5.2: {process_intcode(day_5_input, 5)["outputs"][-1]}')
     print(f'Day 6.1: {calculate_total_orbits(day_6_input)}')
+    print(f'Day 6.2: {calculate_orbital_transfers(day_6_input, "YOU", "SAN")}')
 
 print_results()
