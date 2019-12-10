@@ -28,47 +28,76 @@ def complex_fuel_requirements(fuel_modules):
 
 
 ############### DAY 2 ###############
-def process_intcode(intcode):
-    input_integer = 1
+def process_intcode(intcode, input_integer):
+    ic = intcode.copy()
     outputs = []
-    opcode = 0
     i = 0
-    while opcode != 99:
-        expanded_opcode = str(intcode[i]).zfill(5)
-        opcode = int(expanded_opcode[3:])
-        first_param_mode = int(expanded_opcode[2:3])
-        second_param_mode = int(expanded_opcode[1:2])
-        if opcode == 99:
-            return {'intcode': intcode, 'outputs': outputs}
-        
+    while ic[i] != 99:
+        expanded_opcode = str(ic[i]).zfill(4)
+        opcode = int(expanded_opcode[-2:])
+        mode1 = int(expanded_opcode[1:2])
+        mode2 = int(expanded_opcode[0:1])
+    
         if opcode == 1:
-            first_num = intcode[intcode[i + 1]] if first_param_mode == 0 else intcode[i + 1]
-            second_num = intcode[intcode[i + 2]] if second_param_mode == 0 else intcode[i + 2]
-            result_pos = intcode[i + 3]
-            intcode[result_pos] = first_num + second_num
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            param2 = ic[ic[i + 2]] if mode2 == 0 else ic[i + 2]
+            result_pos = ic[i + 3]
+            ic[result_pos] = param1 + param2
             i += 4
         elif opcode == 2:
-            first_num = intcode[intcode[i + 1]] if first_param_mode == 0 else intcode[i + 1]
-            second_num = intcode[intcode[i + 2]] if second_param_mode == 0 else intcode[i + 2]
-            result_pos = intcode[i + 3]
-            intcode[result_pos] = first_num * second_num
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            param2 = ic[ic[i + 2]] if mode2 == 0 else ic[i + 2]
+            result_pos = ic[i + 3]
+            ic[result_pos] = param1 * param2
             i += 4
         elif opcode == 3:
-            intcode[intcode[i + 1]] = input_integer
+            param1 = ic[i + 1]
+            ic[param1] = input_integer
             i += 2
         elif opcode == 4:
-            first_num = intcode[intcode[i + 1]] if first_param_mode == 0 else intcode[i + 1]
-            outputs.append(first_num)
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            outputs.append(param1)
             i += 2
-        else:
-            return f'Something went wrong at index {i}'
-    return 'Never found the end code'
+        elif opcode == 5:
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            param2 = ic[ic[i + 2]] if mode2 == 0 else ic[i + 2]
+            if param1 != 0:
+                i = param2
+            else:
+                i += 3
+        elif opcode == 6:
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            param2 = ic[ic[i + 2]] if mode2 == 0 else ic[i + 2]
+            if param1 == 0:
+                i = param2
+            else:
+                i += 3
+        elif opcode == 7:
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            param2 = ic[ic[i + 2]] if mode2 == 0 else ic[i + 2]
+            result_pos = ic[i + 3]
+            if param1 < param2:
+                ic[result_pos] = 1
+            else:
+                ic[result_pos] = 0
+            i += 4
+        elif opcode == 8:
+            param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
+            param2 = ic[ic[i + 2]] if mode2 == 0 else ic[i + 2]
+            result_pos = ic[i + 3]
+            if param1 == param2:
+                ic[result_pos] = 1
+            else:
+                ic[result_pos] = 0
+            i += 4
+
+    return {'intcode': ic, 'outputs': outputs}
 
 def find_noun_and_verb(output, intcode, min_noun, max_noun, min_verb, max_verb):
     # Note: the noun and verb are both between 0 and 99
     for noun in range(min_noun, max_noun):
         for verb in range(min_verb, max_verb):
-            if process_intcode([intcode[0], noun, verb] + intcode[3:])['intcode'][0] == output:
+            if process_intcode([intcode[0], noun, verb] + intcode[3:], 1)['intcode'][0] == output:
                 return 100 * noun + verb
     return 'No possible noun/verb combination was found'
 
@@ -279,13 +308,13 @@ def never_decreases(password):
 def print_results():
     print(f'Day 1.1: {simple_fuel_requirements(day_1_input)}')
     print(f'Day 1.2: {complex_fuel_requirements(day_1_input)}')
-    print(f'Day 2.1: {process_intcode([day_2_input[0], 12, 2] + day_2_input[3:])["intcode"][0]}')
+    print(f'Day 2.1: {process_intcode([day_2_input[0], 12, 2] + day_2_input[3:], 1)["intcode"][0]}')
     print(f'Day 2.2: {find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99)}')
     print(f'Day 3.1: {find_closest_intersection(day_3_input)}')
     print(f'Day 3.2: {find_earliest_signal_overlap(day_3_input)}')
     print(f'Day 4.1: {len(find_possible_fuel_passwords(day_4_input, "SIMPLE"))}')
     print(f'Day 4.2: {len(find_possible_fuel_passwords(day_4_input, "COMPLEX"))}')
-    print(f'Day 5.1: {process_intcode(day_5_input)["outputs"]}')
-
+    print(f'Day 5.1: {process_intcode(day_5_input, 1)["outputs"][-1]}')
+    print(f'Day 5.2: {process_intcode(day_5_input, 5)["outputs"][-1]}')
 
 print_results()
