@@ -1,5 +1,6 @@
 import math
-from data_2019 import day_1_input, day_2_input, day_3_input, day_4_input, day_5_input, day_6_input
+from data_2019 import day_1_input, day_2_input, day_3_input, day_4_input, day_5_input, day_6_input, day_7_input
+from itertools import permutations
 
 ############### DAY 1 ###############
 def calculate_simple_fuel(module):
@@ -29,6 +30,9 @@ def complex_fuel_requirements(fuel_modules):
 
 ############### DAY 2 ###############
 def process_intcode(intcode, input_integer):
+    inputs = [input_integer] if isinstance(input_integer, int) else input_integer
+    input_index = 0
+
     ic = intcode.copy()
     outputs = []
     i = 0
@@ -52,7 +56,9 @@ def process_intcode(intcode, input_integer):
             i += 4
         elif opcode == 3:
             param1 = ic[i + 1]
-            ic[param1] = input_integer
+            ic[param1] = inputs[input_index]
+            if len(inputs) != 1:
+                input_index += 1
             i += 2
         elif opcode == 4:
             param1 = ic[ic[i + 1]] if mode1 == 0 else ic[i + 1]
@@ -369,20 +375,43 @@ def calculate_orbital_transfers(orbits, start, end):
 
     return min(intersections)            
 
+############### DAY 7 ###############
+def process_aplification_circuits(intcode):
+    max_output = 0
+    max_output_code = None
+    for combo in permutations([0,1,2,3,4]):
+        res = handle_single_circuit(intcode, combo)
+        if res > max_output:
+            max_output = res
+            max_output_code = combo
+    return max_output
+
+def handle_single_circuit(intcode, order):
+    # order is an array of the first inputs into the intcode
+    # the second input of each aplifier is the output from the previous (0 for the first amplifier)
+    second_input = 0
+    for amplifier_number in order:
+        res = process_intcode(intcode, [amplifier_number, second_input])
+        second_input = res['outputs'][0]
+    return res['outputs'][0]
 
 ############### RESULTS ###############
 def print_results():
-    print(f'Day 1.1: {simple_fuel_requirements(day_1_input)}')
-    print(f'Day 1.2: {complex_fuel_requirements(day_1_input)}')
-    print(f'Day 2.1: {process_intcode([day_2_input[0], 12, 2] + day_2_input[3:], 1)["intcode"][0]}')
-    print(f'Day 2.2: {find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99)}')
-    print(f'Day 3.1: {find_closest_intersection(day_3_input)}')
-    print(f'Day 3.2: {find_earliest_signal_overlap(day_3_input)}')
-    print(f'Day 4.1: {len(find_possible_fuel_passwords(day_4_input, "SIMPLE"))}')
-    print(f'Day 4.2: {len(find_possible_fuel_passwords(day_4_input, "COMPLEX"))}')
-    print(f'Day 5.1: {process_intcode(day_5_input, 1)["outputs"][-1]}')
-    print(f'Day 5.2: {process_intcode(day_5_input, 5)["outputs"][-1]}')
-    print(f'Day 6.1: {calculate_total_orbits(day_6_input)}')
-    print(f'Day 6.2: {calculate_orbital_transfers(day_6_input, "YOU", "SAN")}')
+    results = {}
+    results['Day 1.1'] = simple_fuel_requirements(day_1_input)
+    results['Day 1.2'] = complex_fuel_requirements(day_1_input) 
+    results['Day 2.1'] = process_intcode([day_2_input[0], 12, 2] + day_2_input[3:], 1)["intcode"][0] 
+    results['Day 2.2'] = find_noun_and_verb(19690720, day_2_input, 0, 99, 0, 99) 
+    results['Day 3.1'] = find_closest_intersection(day_3_input) 
+    results['Day 3.2'] = find_earliest_signal_overlap(day_3_input) 
+    results['Day 4.1'] = len(find_possible_fuel_passwords(day_4_input, "SIMPLE")) 
+    results['Day 4.2'] = len(find_possible_fuel_passwords(day_4_input, "COMPLEX")) 
+    results['Day 5.1'] = process_intcode(day_5_input, 1)["outputs"][-1] 
+    results['Day 5.2'] = process_intcode(day_5_input, 5)["outputs"][-1] 
+    results['Day 6.1'] = calculate_total_orbits(day_6_input) 
+    results['Day 6.2'] = calculate_orbital_transfers(day_6_input, "YOU", "SAN")
+    results['Day 7.1'] = process_aplification_circuits(day_7_input)
+    for key in results:
+        print(f'{key}: {results[key]}')
 
 print_results()
